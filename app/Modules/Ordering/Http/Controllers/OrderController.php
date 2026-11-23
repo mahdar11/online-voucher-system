@@ -2,8 +2,10 @@
 
 namespace App\Modules\Ordering\Http\Controllers;
 
+use App\Modules\Inventory\Contracts\VoucherReservations;
 use App\Modules\Ordering\Actions\CancelOrder;
 use App\Modules\Ordering\Actions\ExpireOrders;
+use App\Modules\Ordering\Events\OrderViewed;
 use App\Modules\Ordering\Exceptions\OrderNotCancellableException;
 use App\Modules\Ordering\Http\Resources\OrderResource;
 use App\Modules\Ordering\Models\Order;
@@ -17,15 +19,20 @@ class OrderController
 {
     public function __construct(private readonly OrderAccess $access) {}
 
-    public function show(Request $request, Order $order, ExpireOrders $expireOrders): Response
+    public function show(Request $request, Order $order, ExpireOrders $expireOrders, VoucherReservations $reservations): Response
     {
         $this->authorizeView($request, $order);
 
-        // Status tetap benar walaupun scheduler sedang tidak berjalan.
+        // Beri kesempatan modul lain (Payment) memperbarui status pembayaran dulu,
+        // baru cek kedaluwarsa: pembayaran yang sudah masuk tidak boleh hangus.
+        event(new OrderViewed($order->invoice_number));
+        $order->refresh();
         $expireOrders->expireIfOverdue($order);
 
+        $codes = $order->status->hasVouchers() ? $reservations->codesFor($order->invoice_number) : [];
+
         return Inertia::render('Ordering/Orders/Show', [
-            'order' => (new OrderResource($order->load('items')))->resolve(),
+            'order' => (new OrderResource($order->load('items')))->withVoucherCodes($codes)->resolve(),
         ]);
     }
 

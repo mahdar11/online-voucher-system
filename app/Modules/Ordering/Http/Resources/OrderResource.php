@@ -2,19 +2,32 @@
 
 namespace App\Modules\Ordering\Http\Resources;
 
+use App\Modules\Inventory\Data\VoucherCode;
 use App\Modules\Ordering\Models\Order;
 use App\Modules\Ordering\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Pesanan untuk pemiliknya. Kode voucher sengaja tidak disertakan:
- * baru ditampilkan setelah pesanan lunas (tahap 4–5).
+ * Pesanan untuk pemiliknya. Kode voucher hanya disertakan setelah lunas.
  *
  * @mixin Order
  */
 class OrderResource extends JsonResource
 {
+    /** @var list<VoucherCode> */
+    private array $voucherCodes = [];
+
+    /**
+     * @param  list<VoucherCode>  $codes
+     */
+    public function withVoucherCodes(array $codes): self
+    {
+        $this->voucherCodes = $codes;
+
+        return $this;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -43,7 +56,11 @@ class OrderResource extends JsonResource
             'paid_at' => $this->paid_at?->toIso8601String(),
             'expires_in_seconds' => $this->secondsUntilExpiry(),
             'can_cancel' => $this->isPending(),
-            'can_pay' => false, // aktif setelah integrasi Xendit (tahap 4)
+            'can_pay' => $this->isPending() && ! $this->isOverdue(),
+            'vouchers' => $this->when(
+                $this->status->hasVouchers(),
+                fn () => array_map(fn (VoucherCode $code) => $code->toArray(), $this->voucherCodes),
+            ),
         ];
     }
 }

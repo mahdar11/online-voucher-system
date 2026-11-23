@@ -4,6 +4,8 @@ namespace App\Modules\Ordering;
 
 use App\Modules\Catalog\Contracts\PackageUsageCheck;
 use App\Modules\Ordering\Console\ExpireOrdersCommand;
+use App\Modules\Ordering\Contracts\OrderPayments;
+use App\Modules\Ordering\Services\OrderPaymentsService;
 use App\Modules\Ordering\Services\PackageHasOrders;
 use App\Modules\Shared\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -26,6 +28,7 @@ class OrderingServiceProvider extends ModuleServiceProvider
     public function register(): void
     {
         $this->app->tag([PackageHasOrders::class], PackageUsageCheck::TAG);
+        $this->app->bind(OrderPayments::class, OrderPaymentsService::class);
     }
 
     protected function bootModule(): void

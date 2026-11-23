@@ -4,6 +4,7 @@ namespace App\Modules\Inventory\Services;
 
 use App\Modules\Inventory\Contracts\InsufficientStockException;
 use App\Modules\Inventory\Contracts\VoucherReservations;
+use App\Modules\Inventory\Data\VoucherCode;
 use App\Modules\Inventory\Enums\VoucherStatus;
 use App\Modules\Inventory\Models\Voucher;
 use DateTimeInterface;
@@ -46,5 +47,28 @@ class EloquentVoucherReservations implements VoucherReservations
                 'reservation_ref' => null,
                 'reserved_until' => null,
             ]);
+    }
+
+    public function markSold(string $reference, DateTimeInterface $soldAt): int
+    {
+        return Voucher::query()
+            ->where('reservation_ref', $reference)
+            ->where('status', VoucherStatus::Reserved)
+            ->update([
+                'status' => VoucherStatus::Sold,
+                'reserved_until' => null,
+                'sold_at' => $soldAt,
+            ]);
+    }
+
+    public function codesFor(string $reference): array
+    {
+        return Voucher::query()
+            ->where('reservation_ref', $reference)
+            ->whereIn('status', [VoucherStatus::Sold, VoucherStatus::Used])
+            ->orderBy('id')
+            ->get(['code', 'password'])
+            ->map(fn (Voucher $voucher) => new VoucherCode($voucher->code, $voucher->password))
+            ->all();
     }
 }

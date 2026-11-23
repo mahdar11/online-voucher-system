@@ -2,11 +2,13 @@
 
 namespace App\Modules\Inventory\Contracts;
 
+use App\Modules\Inventory\Data\VoucherCode;
 use DateTimeInterface;
 
 /**
- * Satu-satunya pintu bagi modul lain untuk memesan (mengunci) dan melepas voucher.
- * Reservasi ditandai dengan referensi teks milik pemanggil, mis. nomor invoice.
+ * Satu-satunya pintu bagi modul lain untuk memesan (mengunci), melepas,
+ * dan menjual voucher. Reservasi ditandai dengan referensi teks milik
+ * pemanggil, mis. nomor invoice.
  */
 interface VoucherReservations
 {
@@ -27,4 +29,18 @@ interface VoucherReservations
      * @return int jumlah voucher yang dilepas
      */
     public function release(string $reference): int;
+
+    /**
+     * Menandai voucher yang dikunci referensi ini sebagai terjual.
+     *
+     * @return int jumlah voucher yang terjual
+     */
+    public function markSold(string $reference, DateTimeInterface $soldAt): int;
+
+    /**
+     * Kode voucher yang sudah terjual untuk referensi ini.
+     *
+     * @return list<VoucherCode>
+     */
+    public function codesFor(string $reference): array;
 }

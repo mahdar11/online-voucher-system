@@ -42,7 +42,7 @@ class OrderLifecycleTest extends ModuleTestCase
                 ->where('order.invoice_number', $order->invoice_number)
                 ->where('order.status', 'pending')
                 ->where('order.can_cancel', true)
-                ->where('order.can_pay', false)
+                ->where('order.can_pay', true)
                 ->where('order.expires_in_seconds', fn ($s) => $s > 890 && $s <= 900)
                 ->missing('order.vouchers')
                 ->missing('order.items.0.codes'));

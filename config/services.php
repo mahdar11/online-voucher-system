@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    /*
+    | Xendit Invoice API (dipanggil langsung lewat HTTP client Laravel).
+    | Pakai secret key mode test (xnd_development_...) selama pengembangan.
+    */
+    'xendit' => [
+        'base_url' => env('XENDIT_BASE_URL', 'https://api.xendit.co'),
+        'secret_key' => env('XENDIT_SECRET_KEY'),
+        'callback_token' => env('XENDIT_CALLBACK_TOKEN'),
+        'timeout' => (int) env('XENDIT_TIMEOUT', 15),
+    ],
+
 ];

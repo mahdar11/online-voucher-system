@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Modules\Shared\Http\Middleware\ShareActivityContext::class,
         ]);
 
+        // Webhook dipanggil oleh server penyedia pembayaran (tanpa token CSRF);
+        // keasliannya diverifikasi lewat callback token di controller.
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

@@ -15,6 +15,7 @@
         cancelled: 'bg-gray-100 text-gray-600 ring-gray-200',
         failed: 'bg-red-50 text-red-700 ring-red-200',
         refunded: 'bg-gray-100 text-gray-600 ring-gray-200',
+        refund_required: 'bg-red-50 text-red-700 ring-red-200',
         active: 'bg-green-50 text-green-700 ring-green-200',
         inactive: 'bg-gray-100 text-gray-600 ring-gray-200',
     };
