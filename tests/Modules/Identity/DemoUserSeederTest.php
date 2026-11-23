@@ -13,13 +13,11 @@ class DemoUserSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected bool $seed = true;
-
-    protected string $seeder = RoleSeeder::class;
-
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->seed(RoleSeeder::class);
 
         config([
             'voucher.demo_users.admin.password' => 'admin-demo-123',

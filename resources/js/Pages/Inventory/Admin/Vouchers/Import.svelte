@@ -11,6 +11,7 @@
     const form = useForm({
         package_id: untrack(() => selectedPackage),
         file: null,
+        confirm_withdrawn: false,
         note: '',
     });
 
@@ -64,12 +65,32 @@
                     <progress value={form.progress.percentage} max="100" class="h-2 w-full">{form.progress.percentage}%</progress>
                 {/if}
 
-                <InputField id="note" label="Catatan (opsional)" placeholder="Contoh: kiriman supplier 23 Nov" bind:value={form.note} error={form.errors.note} />
+                <InputField id="note" label="Catatan (opsional)" placeholder="Contoh: stok kartu fisik toko A" bind:value={form.note} error={form.errors.note} />
+
+                <div class="rounded-lg border px-4 py-3 {form.errors.confirm_withdrawn ? 'border-red-300 bg-red-50' : 'border-amber-200 bg-amber-50'}">
+                    <label class="flex items-start gap-3 text-sm text-gray-800">
+                        <input
+                            id="confirm_withdrawn"
+                            type="checkbox"
+                            bind:checked={form.confirm_withdrawn}
+                            class="mt-0.5 rounded border-gray-300"
+                        />
+                        <span>
+                            <span class="font-medium">Kartu fisik untuk kode-kode ini sudah ditarik dari penjualan offline.</span>
+                            <span class="mt-0.5 block text-xs text-gray-600">
+                                Kode yang diimport akan dijual online. Jika kartunya masih beredar di toko, satu kode bisa terjual dua kali.
+                            </span>
+                        </span>
+                    </label>
+                    {#if form.errors.confirm_withdrawn}
+                        <p class="mt-2 text-sm text-red-600">{form.errors.confirm_withdrawn}</p>
+                    {/if}
+                </div>
 
                 <div class="flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5">
                     <button
                         type="submit"
-                        disabled={form.processing || !form.file}
+                        disabled={form.processing || !form.file || !form.confirm_withdrawn}
                         class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                     >
                         {form.processing ? 'Mengimport…' : 'Import Voucher'}
@@ -86,6 +107,7 @@
                     <li>Baris judul (header) boleh ada atau tidak.</li>
                     <li>Pemisah koma <code>,</code> atau titik koma <code>;</code> (Excel).</li>
                     <li>Kode yang sudah ada di paket ini otomatis dilewati.</li>
+                    <li>Untuk stok kartu fisik, pilih paket yang nominal, durasi, dan masa aktifnya sama dengan yang tercetak di kartu.</li>
                 </ul>
                 <pre class="mt-3 overflow-x-auto rounded-lg bg-gray-50 p-3 font-mono text-xs">code,password
 VC-7KQ2MZ9P,

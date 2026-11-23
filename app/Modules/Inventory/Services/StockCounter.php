@@ -32,7 +32,7 @@ class StockCounter implements PackageStockReader
                 VoucherStatus::Available => 'available',
                 VoucherStatus::Reserved => 'reserved',
                 VoucherStatus::Sold, VoucherStatus::Used => 'sold',
-                VoucherStatus::Expired => null,
+                VoucherStatus::Expired, VoucherStatus::Withdrawn => null,
             };
 
             if ($key !== null) {

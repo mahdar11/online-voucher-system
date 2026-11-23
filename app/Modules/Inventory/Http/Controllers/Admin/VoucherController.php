@@ -4,8 +4,10 @@ namespace App\Modules\Inventory\Http\Controllers\Admin;
 
 use App\Modules\Catalog\Contracts\PackageCatalog;
 use App\Modules\Inventory\Actions\DeleteVoucher;
+use App\Modules\Inventory\Actions\WithdrawVoucher;
 use App\Modules\Inventory\Enums\VoucherStatus;
 use App\Modules\Inventory\Exceptions\VoucherNotDeletableException;
+use App\Modules\Inventory\Exceptions\VoucherNotWithdrawableException;
 use App\Modules\Inventory\Http\Requests\VoucherIndexRequest;
 use App\Modules\Inventory\Http\Resources\VoucherResource;
 use App\Modules\Inventory\Models\Voucher;
@@ -50,5 +52,16 @@ class VoucherController
         }
 
         return back()->with('success', "Voucher {$voucher->code} dihapus.");
+    }
+
+    public function withdraw(Voucher $voucher, WithdrawVoucher $withdrawVoucher): RedirectResponse
+    {
+        try {
+            $withdrawVoucher($voucher);
+        } catch (VoucherNotWithdrawableException $exception) {
+            return back()->with('error', $exception->getMessage());
+        }
+
+        return back()->with('success', "Voucher {$voucher->code} ditarik dan tidak akan dijual online.");
     }
 }

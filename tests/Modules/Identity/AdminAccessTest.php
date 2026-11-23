@@ -2,10 +2,10 @@
 
 namespace Tests\Modules\Identity;
 
-use Tests\Support\AdminTestCase;
+use Tests\Support\ModuleTestCase;
 use App\Modules\Identity\Enums\Role;
 
-class AdminAccessTest extends AdminTestCase
+class AdminAccessTest extends ModuleTestCase
 {
     /**
      * @return list<string>

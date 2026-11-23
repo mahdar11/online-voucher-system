@@ -7,6 +7,7 @@ enum OrderStatus: string
     case Pending = 'pending';
     case Paid = 'paid';
     case Completed = 'completed';
+    case Cancelled = 'cancelled';
     case Expired = 'expired';
     case Failed = 'failed';
     case Refunded = 'refunded';
@@ -17,6 +18,7 @@ enum OrderStatus: string
             self::Pending => 'Menunggu Pembayaran',
             self::Paid => 'Dibayar',
             self::Completed => 'Selesai',
+            self::Cancelled => 'Dibatalkan',
             self::Expired => 'Kedaluwarsa',
             self::Failed => 'Gagal',
             self::Refunded => 'Dikembalikan',

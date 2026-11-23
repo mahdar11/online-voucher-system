@@ -13,6 +13,11 @@ class EloquentPackageCatalog implements PackageCatalog
         return VoucherPackage::query()->find($id)?->toData();
     }
 
+    public function findActiveBySlug(string $slug): ?PackageData
+    {
+        return VoucherPackage::query()->active()->where('slug', $slug)->first()?->toData();
+    }
+
     public function all(): array
     {
         return VoucherPackage::query()

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'package_id', 'batch_id', 'code', 'password', 'status',
-    'order_item_id', 'reserved_until', 'sold_at', 'expires_at',
+    'reservation_ref', 'reserved_until', 'sold_at', 'expires_at',
 ])]
 #[Hidden(['code', 'password'])] // kode hanya ditampilkan secara eksplisit ke pihak yang berhak
 class Voucher extends Model
@@ -32,6 +32,11 @@ class Voucher extends Model
     }
 
     public function isDeletable(): bool
+    {
+        return $this->status === VoucherStatus::Available;
+    }
+
+    public function isWithdrawable(): bool
     {
         return $this->status === VoucherStatus::Available;
     }

@@ -2,14 +2,14 @@
 
 namespace Tests\Modules\Catalog;
 
-use Tests\Support\AdminTestCase;
+use Tests\Support\ModuleTestCase;
 use App\Modules\Inventory\Enums\VoucherStatus;
 use App\Modules\Shared\Models\ActivityLog;
 use App\Modules\Inventory\Models\Voucher;
 use App\Modules\Catalog\Models\VoucherPackage;
 use Inertia\Testing\AssertableInertia as Assert;
 
-class PackageAdminTest extends AdminTestCase
+class PackageAdminTest extends ModuleTestCase
 {
     private function validPayload(array $overrides = []): array
     {
@@ -18,6 +18,7 @@ class PackageAdminTest extends AdminTestCase
             'description' => 'Internet seharian',
             'price' => 10000,
             'duration_minutes' => 1440,
+            'validity_days' => 7,
             'quota_mb' => '',
             'speed_limit' => '5m/5m',
             'is_active' => true,
@@ -38,8 +39,45 @@ class PackageAdminTest extends AdminTestCase
         $this->assertSame('5M/5M', $package->speed_limit);
         $this->assertNull($package->quota_mb);
         $this->assertSame(10000, $package->price);
+        $this->assertSame(7, $package->validity_days);
 
         $this->assertTrue(ActivityLog::query()->where('action', 'package.created')->exists());
+    }
+
+    public function test_empty_validity_means_no_limit(): void
+    {
+        $this->actingAs($this->admin())
+            ->post('/admin/paket', $this->validPayload(['validity_days' => '']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull(VoucherPackage::query()->sole()->validity_days);
+    }
+
+    public function test_validity_must_be_between_1_and_365_days(): void
+    {
+        $admin = $this->admin();
+
+        foreach ([0, 366, 'abc'] as $invalid) {
+            $this->actingAs($admin)
+                ->post('/admin/paket', $this->validPayload(['validity_days' => $invalid]))
+                ->assertSessionHasErrors('validity_days');
+        }
+
+        $this->assertDatabaseCount('voucher_packages', 0);
+    }
+
+    public function test_validity_can_be_updated_and_is_shown_on_edit(): void
+    {
+        $package = $this->package(['validity_days' => 3]);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->get("/admin/paket/{$package->id}/ubah")
+            ->assertInertia(fn (Assert $page) => $page->where('package.validity_days', 3));
+
+        $this->actingAs($admin)->put("/admin/paket/{$package->id}", $this->validPayload(['validity_days' => 30]));
+
+        $this->assertSame(30, $package->refresh()->validity_days);
     }
 
     public function test_duplicate_names_get_unique_slugs(): void

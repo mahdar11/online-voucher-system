@@ -2,7 +2,7 @@
     import { Link, router } from '@inertiajs/svelte';
     import AdminLayout from '@/Layouts/AdminLayout.svelte';
     import StatusBadge from '@/Components/StatusBadge.svelte';
-    import { formatDuration, formatNumber, formatQuota, formatRupiah } from '@/lib/format.js';
+    import { formatDuration, formatNumber, formatQuota, formatRupiah, formatValidity } from '@/lib/format.js';
 
     let { packages } = $props();
 
@@ -36,7 +36,7 @@
                     <tr>
                         <th class="px-4 py-3">Paket</th>
                         <th class="px-4 py-3 text-right">Harga</th>
-                        <th class="px-4 py-3">Durasi</th>
+                        <th class="px-4 py-3">Durasi / Masa Aktif</th>
                         <th class="px-4 py-3">Kuota / Kecepatan</th>
                         <th class="px-4 py-3 text-right">Tersedia</th>
                         <th class="px-4 py-3 text-right">Terjual</th>
@@ -52,7 +52,10 @@
                                 <p class="text-xs text-gray-500">/{pkg.slug}</p>
                             </td>
                             <td class="px-4 py-3 text-right whitespace-nowrap">{formatRupiah(pkg.price)}</td>
-                            <td class="px-4 py-3 whitespace-nowrap">{formatDuration(pkg.duration_minutes)}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                {formatDuration(pkg.duration_minutes)}
+                                <span class="block text-xs text-gray-500">aktif {formatValidity(pkg.validity_days)}</span>
+                            </td>
                             <td class="px-4 py-3 whitespace-nowrap">
                                 {formatQuota(pkg.quota_mb)}
                                 {#if pkg.speed_limit}<span class="text-gray-500"> · {pkg.speed_limit}</span>{/if}

@@ -14,6 +14,7 @@ final readonly class PackageData
         public ?string $description,
         public int $price,
         public int $durationMinutes,
+        public ?int $validityDays,
         public ?int $quotaMb,
         public ?string $speedLimit,
         public bool $isActive,

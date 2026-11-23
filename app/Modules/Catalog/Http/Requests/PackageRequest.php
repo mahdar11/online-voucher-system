@@ -19,6 +19,7 @@ class PackageRequest extends FormRequest
         $this->merge([
             'speed_limit' => $this->filled('speed_limit') ? strtoupper(trim((string) $this->input('speed_limit'))) : null,
             'quota_mb' => $this->filled('quota_mb') ? $this->input('quota_mb') : null,
+            'validity_days' => $this->filled('validity_days') ? $this->input('validity_days') : null,
             'is_active' => $this->boolean('is_active'),
             'sort_order' => $this->input('sort_order', 0) ?? 0,
         ]);
@@ -34,6 +35,7 @@ class PackageRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'price' => ['required', 'integer', 'min:0', 'max:100000000'],
             'duration_minutes' => ['required', 'integer', 'min:1', 'max:525600'],
+            'validity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
             'quota_mb' => ['nullable', 'integer', 'min:1', 'max:10000000'],
             'speed_limit' => ['nullable', 'string', 'max:50', 'regex:/^\d+[KMG]?\/\d+[KMG]?$/'],
             'is_active' => ['boolean'],
@@ -62,6 +64,7 @@ class PackageRequest extends FormRequest
             'description' => 'deskripsi',
             'price' => 'harga',
             'duration_minutes' => 'durasi',
+            'validity_days' => 'masa aktif',
             'quota_mb' => 'kuota',
             'speed_limit' => 'kecepatan',
             'sort_order' => 'urutan',

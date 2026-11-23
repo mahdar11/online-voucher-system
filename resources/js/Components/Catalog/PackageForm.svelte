@@ -18,6 +18,7 @@
         price: initial?.price ?? '',
         duration_amount: initialDuration.amount,
         duration_unit: String(initialDuration.unit),
+        validity_days: initial?.validity_days ?? '',
         quota_mb: initial?.quota_mb ?? '',
         speed_limit: initial?.speed_limit ?? '',
         is_active: initial?.is_active ?? true,
@@ -96,6 +97,19 @@
                 <p class="mt-1 text-xs text-gray-500">= {formatDuration(durationMinutes)}</p>
             {/if}
         </div>
+
+        <InputField
+            id="validity_days"
+            label="Masa Aktif (hari, opsional)"
+            type="number"
+            min="1"
+            max="365"
+            inputmode="numeric"
+            placeholder="Contoh: 7"
+            hint="Dihitung sejak login pertama di hotspot. Kosongkan jika tanpa batas."
+            bind:value={form.validity_days}
+            error={form.errors.validity_days}
+        />
 
         <InputField
             id="quota_mb"

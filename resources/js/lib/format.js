@@ -54,6 +54,11 @@ export function splitDuration(minutes) {
     return { amount: value / unit.value || '', unit: unit.value };
 }
 
+/** Masa aktif paket: 7 -> "7 hari", null -> "tanpa batas". */
+export function formatValidity(days) {
+    return days ? `${formatNumber(days)} hari` : 'tanpa batas';
+}
+
 export function formatQuota(mb) {
     if (mb === null || mb === undefined || mb === '') return 'Unlimited';
 

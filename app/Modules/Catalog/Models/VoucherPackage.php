@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
-    'name', 'slug', 'description', 'price', 'duration_minutes',
+    'name', 'slug', 'description', 'price', 'duration_minutes', 'validity_days',
     'quota_mb', 'speed_limit', 'is_active', 'sort_order',
 ])]
 class VoucherPackage extends Model
@@ -18,6 +18,7 @@ class VoucherPackage extends Model
         return [
             'price' => 'integer',
             'duration_minutes' => 'integer',
+            'validity_days' => 'integer',
             'quota_mb' => 'integer',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
@@ -45,6 +46,7 @@ class VoucherPackage extends Model
             description: $this->description,
             price: $this->price,
             durationMinutes: $this->duration_minutes,
+            validityDays: $this->validity_days,
             quotaMb: $this->quota_mb,
             speedLimit: $this->speed_limit,
             isActive: $this->is_active,

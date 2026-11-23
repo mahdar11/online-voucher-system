@@ -3,6 +3,7 @@
 namespace App\Modules\Identity\Services;
 
 use App\Modules\Identity\Contracts\UserDirectory;
+use App\Modules\Identity\Data\UserProfile;
 use App\Modules\Identity\Models\User;
 
 class EloquentUserDirectory implements UserDirectory
@@ -16,5 +17,12 @@ class EloquentUserDirectory implements UserDirectory
         }
 
         return User::query()->whereKey($ids)->pluck('name', 'id')->all();
+    }
+
+    public function profile(int $id): ?UserProfile
+    {
+        $user = User::query()->find($id);
+
+        return $user ? new UserProfile($user->id, $user->name, $user->email, $user->phone) : null;
     }
 }

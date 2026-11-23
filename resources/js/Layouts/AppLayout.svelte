@@ -1,5 +1,6 @@
 <script>
     import { Link, page } from '@inertiajs/svelte';
+    import Alert from '@/Components/Alert.svelte';
 
     let { children } = $props();
 
@@ -9,15 +10,16 @@
 
 <div class="min-h-screen">
     <header class="border-b border-gray-200 bg-white">
-        <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+        <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
             <Link href="/" class="text-lg font-semibold text-blue-700">{page.props.appName}</Link>
 
-            <div class="flex items-center gap-2 text-sm sm:gap-4">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm sm:gap-x-4">
                 {#if user}
                     {#if isStaff}
                         <Link href="/admin" class="font-medium text-gray-700 hover:text-blue-700">Admin</Link>
                     {/if}
-                    <Link href="/akun" class="font-medium text-gray-700 hover:text-blue-700">Akun Saya</Link>
+                    <Link href="/akun/pesanan" class="font-medium text-gray-700 hover:text-blue-700">Pesanan Saya</Link>
+                    <Link href="/akun" class="font-medium text-gray-700 hover:text-blue-700">Akun</Link>
                     <Link
                         href="/logout"
                         method="post"
@@ -36,7 +38,10 @@
         </nav>
     </header>
 
-    <main class="mx-auto max-w-6xl px-4 py-8">
+    <main class="mx-auto max-w-6xl space-y-4 px-4 py-8">
+        <Alert type="success" message={page.props.flash?.success} details={page.props.flash?.details} />
+        <Alert type="error" message={page.props.flash?.error} />
+
         {@render children?.()}
     </main>
 </div>

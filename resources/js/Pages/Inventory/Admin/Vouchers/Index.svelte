@@ -36,6 +36,15 @@
             router.delete(`/admin/voucher/${voucher.id}`, { preserveScroll: true });
         }
     }
+
+    function withdraw(voucher) {
+        const message = `Tarik voucher ${voucher.code}?\n\nVoucher tidak akan dijual online lagi, tapi jejaknya tetap tersimpan. `
+            + 'Pakai ini jika kartu fisiknya sudah terjual di toko.';
+
+        if (confirm(message)) {
+            router.patch(`/admin/voucher/${voucher.id}/tarik`, {}, { preserveScroll: true });
+        }
+    }
 </script>
 
 <AdminLayout title="Stok Voucher">
@@ -102,9 +111,14 @@
                             <td class="px-4 py-2.5 text-gray-600">{voucher.batch_id ? `#${voucher.batch_id}` : '-'}</td>
                             <td class="px-4 py-2.5 whitespace-nowrap text-gray-600">{formatDateTime(voucher.created_at)}</td>
                             <td class="px-4 py-2.5 text-right">
-                                {#if voucher.status === 'available'}
-                                    <button type="button" class="text-red-600 hover:underline" onclick={() => destroy(voucher)}>Hapus</button>
-                                {/if}
+                                <div class="flex justify-end gap-3 whitespace-nowrap">
+                                    {#if voucher.can_withdraw}
+                                        <button type="button" class="text-orange-700 hover:underline" onclick={() => withdraw(voucher)}>Tarik</button>
+                                    {/if}
+                                    {#if voucher.can_delete}
+                                        <button type="button" class="text-red-600 hover:underline" onclick={() => destroy(voucher)}>Hapus</button>
+                                    {/if}
+                                </div>
                             </td>
                         </tr>
                     {/each}

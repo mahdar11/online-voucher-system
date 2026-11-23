@@ -12,6 +12,11 @@ interface PackageCatalog
     public function find(int $id): ?PackageData;
 
     /**
+     * Paket yang sedang dijual (aktif), dicari dari slug di URL.
+     */
+    public function findActiveBySlug(string $slug): ?PackageData;
+
+    /**
      * Semua paket, terurut sesuai urutan tampil.
      *
      * @return list<PackageData>

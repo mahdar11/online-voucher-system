@@ -19,6 +19,7 @@ Route::admin(function () {
             Route::post('/import', [ImportVoucherController::class, 'store'])->name('import.store');
             Route::get('/import/contoh', [ImportVoucherController::class, 'sample'])->name('import.sample');
 
+            Route::patch('/{voucher}/tarik', [VoucherController::class, 'withdraw'])->name('withdraw');
             Route::delete('/{voucher}', [VoucherController::class, 'destroy'])->name('destroy');
         });
 

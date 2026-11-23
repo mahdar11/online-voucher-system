@@ -2,16 +2,17 @@
 
 namespace Tests\Modules\Inventory;
 
-use Tests\Support\AdminTestCase;
+use Tests\Support\ModuleTestCase;
 use App\Modules\Inventory\Enums\BatchSource;
 use App\Modules\Inventory\Enums\VoucherStatus;
 use App\Modules\Inventory\Models\Voucher;
 use App\Modules\Inventory\Models\VoucherBatch;
 use App\Modules\Inventory\Services\VoucherCodeGenerator;
+use App\Modules\Shared\Models\ActivityLog;
 use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
-class VoucherStockTest extends AdminTestCase
+class VoucherStockTest extends ModuleTestCase
 {
     public function test_generate_creates_unique_codes_with_prefix_and_length(): void
     {
@@ -110,6 +111,7 @@ class VoucherStockTest extends AdminTestCase
             ->post('/admin/voucher/import', [
                 'package_id' => $package->id,
                 'file' => UploadedFile::fake()->createWithContent('stok.csv', $csv),
+                'confirm_withdrawn' => true,
                 'note' => 'supplier',
             ])
             ->assertRedirect('/admin/batch')
@@ -135,6 +137,7 @@ class VoucherStockTest extends AdminTestCase
         $this->actingAs($this->admin())->post('/admin/voucher/import', [
             'package_id' => $package->id,
             'file' => UploadedFile::fake()->createWithContent('excel.csv', "AAA111;p1\r\nBBB222;p2\r\n"),
+            'confirm_withdrawn' => true,
         ])->assertSessionHasNoErrors();
 
         $this->assertSame('p2', Voucher::query()->where('code', 'BBB222')->value('password'));
@@ -148,6 +151,7 @@ class VoucherStockTest extends AdminTestCase
             ->post('/admin/voucher/import', [
                 'package_id' => $package->id,
                 'file' => UploadedFile::fake()->createWithContent('kosong.csv', "code,password\nab,\n"),
+                'confirm_withdrawn' => true,
             ])
             ->assertSessionHasErrors('file');
 
@@ -162,6 +166,7 @@ class VoucherStockTest extends AdminTestCase
             ->post('/admin/voucher/import', [
                 'package_id' => $package->id,
                 'file' => UploadedFile::fake()->create('foto.png', 10, 'image/png'),
+                'confirm_withdrawn' => true,
             ])
             ->assertSessionHasErrors('file');
     }
@@ -199,5 +204,74 @@ class VoucherStockTest extends AdminTestCase
         $this->actingAs($admin)
             ->get('/admin/voucher?search=alpha')
             ->assertInertia(fn (Assert $page) => $page->where('vouchers.total', 2));
+    }
+
+    public function test_import_requires_physical_card_confirmation(): void
+    {
+        $package = $this->package();
+
+        $this->actingAs($this->admin())
+            ->post('/admin/voucher/import', [
+                'package_id' => $package->id,
+                'file' => UploadedFile::fake()->createWithContent('fisik.csv', "FISIK001,\n"),
+            ])
+            ->assertSessionHasErrors('confirm_withdrawn');
+
+        $this->assertDatabaseCount('vouchers', 0);
+        $this->assertDatabaseCount('voucher_batches', 0);
+    }
+
+    public function test_available_voucher_can_be_withdrawn(): void
+    {
+        $package = $this->package();
+        $voucher = Voucher::query()->create(['package_id' => $package->id, 'code' => 'FISIK001']);
+
+        $this->actingAs($this->admin())
+            ->patch("/admin/voucher/{$voucher->id}/tarik")
+            ->assertSessionHas('success');
+
+        $this->assertSame(VoucherStatus::Withdrawn, $voucher->refresh()->status);
+        $this->assertTrue(ActivityLog::query()->where('action', 'voucher.withdrawn')->where('subject_id', $voucher->id)->exists());
+    }
+
+    public function test_only_available_vouchers_can_be_withdrawn(): void
+    {
+        $package = $this->package();
+        $admin = $this->admin();
+
+        foreach ([VoucherStatus::Sold, VoucherStatus::Reserved, VoucherStatus::Withdrawn] as $i => $status) {
+            $voucher = Voucher::query()->create(['package_id' => $package->id, 'code' => "LOCK00{$i}", 'status' => $status]);
+
+            $this->actingAs($admin)
+                ->patch("/admin/voucher/{$voucher->id}/tarik")
+                ->assertSessionHas('error');
+
+            $this->assertSame($status, $voucher->refresh()->status);
+        }
+    }
+
+    public function test_withdrawn_voucher_cannot_be_deleted_and_is_not_counted_as_stock(): void
+    {
+        $package = $this->package();
+        $withdrawn = Voucher::query()->create(['package_id' => $package->id, 'code' => 'TARIK01', 'status' => VoucherStatus::Withdrawn]);
+        Voucher::query()->create(['package_id' => $package->id, 'code' => 'ADA001']);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->delete("/admin/voucher/{$withdrawn->id}")->assertSessionHas('error');
+        $this->assertModelExists($withdrawn);
+
+        $this->actingAs($admin)
+            ->get('/admin/paket')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('packages.0.available_count', 1)
+                ->where('packages.0.sold_count', 0));
+
+        $this->actingAs($admin)
+            ->get("/admin/voucher?status=withdrawn")
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('vouchers.total', 1)
+                ->where('vouchers.data.0.status_label', 'Ditarik')
+                ->where('vouchers.data.0.can_withdraw', false)
+                ->where('vouchers.data.0.can_delete', false));
     }
 }

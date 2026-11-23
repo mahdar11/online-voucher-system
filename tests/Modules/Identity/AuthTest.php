@@ -13,9 +13,16 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected bool $seed = true;
+    /**
+     * Role di-seed per test (ikut di-rollback), supaya tidak bergantung pada
+     * urutan test atau pada seed saat database pertama kali dimigrasi.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
 
-    protected string $seeder = RoleSeeder::class;
+        $this->seed(RoleSeeder::class);
+    }
 
     private function userWithRole(Role $role, array $attributes = []): User
     {

@@ -33,6 +33,7 @@ class PackageResource extends JsonResource
             'description' => $this->description,
             'price' => $this->price,
             'duration_minutes' => $this->duration_minutes,
+            'validity_days' => $this->validity_days,
             'quota_mb' => $this->quota_mb,
             'speed_limit' => $this->speed_limit,
             'is_active' => $this->is_active,
