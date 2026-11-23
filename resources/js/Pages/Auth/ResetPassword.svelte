@@ -1,4 +1,5 @@
 <script>
+    import { untrack } from 'svelte';
     import { useForm } from '@inertiajs/svelte';
     import GuestLayout from '../../Layouts/GuestLayout.svelte';
     import InputField from '../../Components/InputField.svelte';
@@ -7,8 +8,8 @@
     let { token, email = '' } = $props();
 
     const form = useForm({
-        token,
-        email,
+        token: untrack(() => token),
+        email: untrack(() => email),
         password: '',
         password_confirmation: '',
     });

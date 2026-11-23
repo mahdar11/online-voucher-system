@@ -17,4 +17,21 @@ return [
         'password' => env('SUPER_ADMIN_PASSWORD'),
     ],
 
+    /*
+    | Akun demo untuk mencoba role admin dan customer. Hanya dibuat oleh
+    | DemoUserSeeder saat APP_ENV=local.
+    */
+    'demo_users' => [
+        'admin' => [
+            'name' => 'Admin Demo',
+            'email' => env('DEMO_ADMIN_EMAIL', 'admin@online-voucher.test'),
+            'password' => env('DEMO_ADMIN_PASSWORD'),
+        ],
+        'customer' => [
+            'name' => 'Customer Demo',
+            'email' => env('DEMO_CUSTOMER_EMAIL', 'customer@online-voucher.test'),
+            'password' => env('DEMO_CUSTOMER_PASSWORD'),
+        ],
+    ],
+
 ];

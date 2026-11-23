@@ -43,9 +43,37 @@ class VoucherPackage extends Model
         return $this->vouchers()->where('status', VoucherStatus::Available);
     }
 
+    /** @return HasMany<OrderItem, $this> */
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'package_id');
+    }
+
     /** @param Builder<self> $query */
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true)->orderBy('sort_order');
+    }
+
+    /**
+     * Menambahkan available_count, reserved_count, dan sold_count (termasuk terpakai).
+     *
+     * @param  Builder<self>  $query
+     */
+    public function scopeWithStockCounts(Builder $query): void
+    {
+        $query->withCount([
+            'vouchers as available_count' => fn (Builder $q) => $q->where('status', VoucherStatus::Available),
+            'vouchers as reserved_count' => fn (Builder $q) => $q->where('status', VoucherStatus::Reserved),
+            'vouchers as sold_count' => fn (Builder $q) => $q->whereIn('status', [VoucherStatus::Sold, VoucherStatus::Used]),
+        ]);
+    }
+
+    /**
+     * Paket hanya boleh dihapus jika belum punya voucher dan belum pernah dipesan.
+     */
+    public function isDeletable(): bool
+    {
+        return ! $this->vouchers()->exists() && ! $this->orderItems()->exists();
     }
 }

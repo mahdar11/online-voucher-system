@@ -18,5 +18,9 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             SuperAdminSeeder::class,
         ]);
+
+        if (app()->isLocal()) {
+            $this->call(DemoUserSeeder::class);
+        }
     }
 }
