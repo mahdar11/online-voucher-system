@@ -4,11 +4,12 @@
     import StatusBadge from '@/Components/StatusBadge.svelte';
     import { formatNumber, formatRupiah } from '@/lib/format.js';
 
-    let { stats, packages } = $props();
+    let { stats, today, attention, packages } = $props();
 
     const user = $derived(page.props.auth.user);
     const roleLabel = $derived(user.roleLabel);
     const canManageVouchers = $derived(user.can.manageVouchers);
+    const canManageOrders = $derived(user.can.manageOrders);
 
     const cards = $derived([
         { label: 'Paket Aktif', value: stats.active_packages },
@@ -16,6 +17,8 @@
         { label: 'Sedang Dipesan', value: stats.reserved },
         { label: 'Terjual', value: stats.sold },
     ]);
+
+    const needsAction = $derived(attention.refund_required + attention.unsent_vouchers);
 </script>
 
 <AdminLayout title="Dashboard">
@@ -23,6 +26,34 @@
         Masuk sebagai <span class="font-medium text-gray-900">{user.name}</span>
         <span class="ml-1 rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">{roleLabel}</span>
     </p>
+
+    {#if needsAction > 0 && canManageOrders}
+        <Link
+            href="/admin/pesanan?status=perlu-tindakan"
+            class="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 hover:border-red-300"
+        >
+            <span>
+                <span class="font-semibold">{formatNumber(needsAction)} pesanan perlu tindakan</span>
+                ({formatNumber(attention.refund_required)} perlu refund, {formatNumber(attention.unsent_vouchers)} email voucher belum terkirim)
+            </span>
+            <span class="font-medium">Lihat ›</span>
+        </Link>
+    {/if}
+
+    <div class="grid gap-4 sm:grid-cols-3">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5">
+            <p class="text-sm text-gray-600">Pendapatan hari ini</p>
+            <p class="mt-1 text-2xl font-semibold tabular-nums">{formatRupiah(today.revenue)}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5">
+            <p class="text-sm text-gray-600">Pesanan lunas hari ini</p>
+            <p class="mt-1 text-2xl font-semibold tabular-nums">{formatNumber(today.orders)}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5">
+            <p class="text-sm text-gray-600">Menunggu pembayaran</p>
+            <p class="mt-1 text-2xl font-semibold tabular-nums">{formatNumber(attention.pending)}</p>
+        </div>
+    </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {#each cards as card (card.label)}

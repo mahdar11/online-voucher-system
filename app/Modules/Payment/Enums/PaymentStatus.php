@@ -8,6 +8,8 @@ enum PaymentStatus: string
     case Paid = 'paid';
     case Expired = 'expired';
     case Failed = 'failed';
+    /** Dana sudah dikembalikan ke pembeli (ditandai admin). */
+    case Refunded = 'refunded';
 
     public function label(): string
     {
@@ -16,6 +18,7 @@ enum PaymentStatus: string
             self::Paid => 'Lunas',
             self::Expired => 'Kedaluwarsa',
             self::Failed => 'Gagal',
+            self::Refunded => 'Dikembalikan',
         };
     }
 }

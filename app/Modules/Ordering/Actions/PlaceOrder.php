@@ -12,6 +12,7 @@ use App\Modules\Ordering\Exceptions\TooManyPendingOrdersException;
 use App\Modules\Ordering\Models\Order;
 use App\Modules\Ordering\Services\InvoiceNumberGenerator;
 use App\Modules\Shared\Services\ActivityLogger;
+use App\Modules\Shared\Settings\SiteSettings;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -21,14 +22,13 @@ use Illuminate\Support\Facades\DB;
  */
 class PlaceOrder
 {
-    public const MAX_QUANTITY = 5;
-
     public const MAX_PENDING_PER_EMAIL = 3;
 
     public function __construct(
         private readonly VoucherReservations $reservations,
         private readonly InvoiceNumberGenerator $invoices,
         private readonly ActivityLogger $logger,
+        private readonly SiteSettings $settings,
     ) {}
 
     /**
@@ -39,7 +39,7 @@ class PlaceOrder
     {
         $this->guardPendingLimit($customer->email);
 
-        $expiresAt = now()->addMinutes((int) config('voucher.reservation_minutes', 15));
+        $expiresAt = now()->addMinutes($this->settings->reservationMinutes());
         $total = $package->price * $quantity;
 
         $order = DB::transaction(function () use ($package, $quantity, $customer, $expiresAt, $total) {

@@ -1,5 +1,7 @@
 <?php
 
+use App\Modules\Identity\Enums\Permission;
+use App\Modules\Ordering\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Modules\Ordering\Http\Controllers\CheckoutController;
 use App\Modules\Ordering\Http\Controllers\MyOrdersController;
 use App\Modules\Ordering\Http\Controllers\OrderController;
@@ -31,4 +33,18 @@ Route::get('/riwayat/buka/{token}', [OrderHistoryController::class, 'open'])
 
 Route::middleware('auth')->group(function () {
     Route::get('/akun/pesanan', [MyOrdersController::class, 'index'])->name('account.orders');
+});
+
+Route::admin(function () {
+    Route::middleware(Permission::ManageOrders->middleware())
+        ->controller(AdminOrderController::class)
+        ->prefix('pesanan')
+        ->name('orders.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{order:invoice_number}', 'show')->name('show');
+            Route::post('/{order:invoice_number}/kirim-ulang', 'resend')->name('resend');
+            Route::post('/{order:invoice_number}/refund', 'refund')->name('refund');
+            Route::post('/{order:invoice_number}/batal', 'cancel')->name('cancel');
+        });
 });

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Modules\Shared\Http\Middleware\ShareActivityContext::class,
+            \App\Modules\Identity\Http\Middleware\EnsureUserIsActive::class,
         ]);
 
         // Webhook dipanggil oleh server penyedia pembayaran (tanpa token CSRF);

@@ -2,7 +2,7 @@
 
 namespace App\Modules\Ordering\Http\Requests;
 
-use App\Modules\Ordering\Actions\PlaceOrder;
+use App\Modules\Shared\Settings\SiteSettings;
 use App\Modules\Ordering\Data\CustomerData;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -28,7 +28,7 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'quantity' => ['required', 'integer', 'min:1', 'max:'.PlaceOrder::MAX_QUANTITY],
+            'quantity' => ['required', 'integer', 'min:1', 'max:'.app(SiteSettings::class)->maxQuantity()],
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20', 'regex:/^(\+62|62|0)8[0-9]{7,12}$/'],
@@ -51,7 +51,7 @@ class CheckoutRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'quantity.max' => 'Maksimal '.PlaceOrder::MAX_QUANTITY.' voucher per pesanan.',
+            'quantity.max' => 'Maksimal '.app(SiteSettings::class)->maxQuantity().' voucher per pesanan.',
             'phone.regex' => 'Format nomor HP tidak valid, contoh: 081234567890.',
         ];
     }

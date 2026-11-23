@@ -24,6 +24,10 @@ export default defineConfig({
         svelte(),
         tailwindcss(),
     ],
+    build: {
+        // ApexCharts (~950 KB, ~280 KB gzip) hanya dimuat lazy di halaman Laporan admin.
+        chunkSizeWarningLimit: 1000,
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

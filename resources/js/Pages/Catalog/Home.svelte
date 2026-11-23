@@ -2,7 +2,7 @@
     import AppLayout from '@/Layouts/AppLayout.svelte';
     import PackageCard from '@/Components/Catalog/PackageCard.svelte';
 
-    let { packages } = $props();
+    let { packages, announcement = null } = $props();
 </script>
 
 <svelte:head>
@@ -10,6 +10,10 @@
 </svelte:head>
 
 <AppLayout>
+    {#if announcement}
+        <p class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-center text-sm text-blue-900" role="note">{announcement}</p>
+    {/if}
+
     <section class="py-6 text-center sm:py-10">
         <h1 class="text-3xl font-semibold sm:text-4xl">Beli Voucher Internet Online</h1>
         <p class="mx-auto mt-3 max-w-xl text-gray-600">

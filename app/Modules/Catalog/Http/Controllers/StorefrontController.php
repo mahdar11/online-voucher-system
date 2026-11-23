@@ -8,6 +8,7 @@ use App\Modules\Catalog\Data\PackageStock;
 use App\Modules\Catalog\Data\StockAvailability;
 use App\Modules\Catalog\Data\StorefrontPackage;
 use App\Modules\Catalog\Models\VoucherPackage;
+use App\Modules\Shared\Settings\SiteSettings;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +17,7 @@ use Inertia\Response;
  */
 class StorefrontController
 {
-    public function home(PackageStockReader $stockReader): Response
+    public function home(PackageStockReader $stockReader, SiteSettings $settings): Response
     {
         $packages = VoucherPackage::query()->active()->ordered()->get()
             ->map(fn (VoucherPackage $package) => $package->toData());
@@ -24,6 +25,7 @@ class StorefrontController
         $stock = $stockReader->stockFor($packages->map(fn (PackageData $p) => $p->id)->all());
 
         return Inertia::render('Catalog/Home', [
+            'announcement' => $settings->announcement(),
             'packages' => $packages->map(fn (PackageData $package) => StorefrontPackage::make(
                 $package,
                 StockAvailability::from($stock[$package->id] ?? new PackageStock),

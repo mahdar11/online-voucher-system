@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Event;
 use App\Modules\Identity\Models\User;
 use App\Modules\Identity\Services\EloquentUserDirectory;
 use App\Modules\Shared\ModuleServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Closure;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -35,6 +36,11 @@ class IdentityServiceProvider extends ModuleServiceProvider
 
     public function register(): void
     {
+        // Alias tetap untuk kolom polymorphic (bukan nama class), agar data tidak
+        // rusak bila class dipindah. Lihat migration normalize_morph_types.
+        Relation::enforceMorphMap([
+            'user' => User::class,
+        ]);
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
         $this->app->bind(UserDirectory::class, EloquentUserDirectory::class);
     }

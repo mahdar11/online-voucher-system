@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Modules\Identity\Models\User;
+use App\Modules\Shared\Settings\SiteSettings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,6 +40,10 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'appName' => config('app.name'),
+            'site' => fn () => [
+                'supportEmail' => app(SiteSettings::class)->supportEmail(),
+                'supportWhatsapp' => app(SiteSettings::class)->supportWhatsapp(),
+            ],
             'auth' => [
                 'user' => fn () => $this->presentUser($request->user()),
             ],

@@ -77,7 +77,14 @@ class ModuleBoundaryTest extends TestCase
             }
         }
 
-        $this->assertSame([], array_values(array_diff($leftovers, [$this->relative(__FILE__)])));
+        // File yang sengaja menyebut nama class lama sebagai teks (untuk konversi data).
+        $allowed = [
+            $this->relative(__FILE__),
+            'database/migrations/2026_11_23_130000_normalize_morph_types.php',
+            'tests/Architecture/MorphMapTest.php',
+        ];
+
+        $this->assertSame([], array_values(array_diff($leftovers, $allowed)));
     }
 
     /**

@@ -5,12 +5,18 @@ namespace App\Modules\Ordering;
 use App\Modules\Catalog\Contracts\PackageUsageCheck;
 use App\Modules\Ordering\Console\ExpireOrdersCommand;
 use App\Modules\Ordering\Contracts\OrderPayments;
+use App\Modules\Ordering\Contracts\PaymentHistoryReader;
+use App\Modules\Ordering\Contracts\SalesReport;
+use App\Modules\Ordering\Services\EloquentSalesReport;
+use App\Modules\Ordering\Services\NoPaymentHistory;
 use App\Modules\Identity\Events\EmailOwnershipConfirmed;
 use App\Modules\Ordering\Listeners\ClaimGuestOrders;
 use App\Modules\Ordering\Listeners\SendOrderEmails;
 use App\Modules\Ordering\Services\OrderPaymentsService;
 use App\Modules\Ordering\Services\PackageHasOrders;
 use App\Modules\Shared\ModuleServiceProvider;
+use App\Modules\Ordering\Models\Order;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
@@ -31,8 +37,16 @@ class OrderingServiceProvider extends ModuleServiceProvider
 
     public function register(): void
     {
+        // Alias tetap untuk kolom polymorphic (bukan nama class), agar data tidak
+        // rusak bila class dipindah. Lihat migration normalize_morph_types.
+        Relation::enforceMorphMap([
+            'order' => Order::class,
+        ]);
         $this->app->tag([PackageHasOrders::class], PackageUsageCheck::TAG);
         $this->app->bind(OrderPayments::class, OrderPaymentsService::class);
+        $this->app->bind(SalesReport::class, EloquentSalesReport::class);
+        // Bawaan tanpa riwayat; modul Payment menimpanya dengan implementasi sungguhan.
+        $this->app->bindIf(PaymentHistoryReader::class, NoPaymentHistory::class);
     }
 
     protected function bootModule(): void

@@ -9,6 +9,12 @@ return [
     'reservation_minutes' => (int) env('VOUCHER_RESERVATION_MINUTES', 15),
 
     /*
+    | Zona waktu bisnis untuk batas hari di laporan dan tampilan admin.
+    | Data tetap disimpan dalam UTC.
+    */
+    'business_timezone' => env('BUSINESS_TIMEZONE', 'Asia/Jakarta'),
+
+    /*
     | Akun super admin awal yang dibuat oleh SuperAdminSeeder.
     */
     'super_admin' => [

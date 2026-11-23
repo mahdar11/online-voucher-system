@@ -15,6 +15,11 @@
             { href: '/admin/paket', label: 'Paket Voucher', permission: 'managePackages' },
             { href: '/admin/voucher', label: 'Stok Voucher', permission: 'manageVouchers' },
             { href: '/admin/batch', label: 'Riwayat Batch', permission: 'manageVouchers' },
+            { href: '/admin/pesanan', label: 'Pesanan', permission: 'manageOrders' },
+            { href: '/admin/laporan', label: 'Laporan', permission: 'viewReports' },
+            { href: '/admin/pengguna', label: 'Pengguna', permission: 'manageUsers' },
+            { href: '/admin/pengaturan', label: 'Pengaturan', permission: 'manageSettings' },
+            { href: '/admin/log', label: 'Log Aktivitas', permission: 'manageSettings' },
         ].filter((item) => !item.permission || user?.can?.[item.permission]),
     );
 

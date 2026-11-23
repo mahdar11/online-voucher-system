@@ -14,6 +14,7 @@ use App\Modules\Ordering\Actions\PlaceOrder;
 use App\Modules\Ordering\Exceptions\TooManyPendingOrdersException;
 use App\Modules\Ordering\Http\Requests\CheckoutRequest;
 use App\Modules\Ordering\Services\OrderAccess;
+use App\Modules\Shared\Settings\SiteSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,7 +27,7 @@ class CheckoutController
         private readonly PackageStockReader $stockReader,
     ) {}
 
-    public function create(Request $request, string $slug, UserDirectory $users): Response
+    public function create(Request $request, string $slug, UserDirectory $users, SiteSettings $settings): Response
     {
         $package = $this->findPackage($slug);
         $availability = $this->availability($package);
@@ -34,8 +35,8 @@ class CheckoutController
 
         return Inertia::render('Ordering/Checkout/Create', [
             'package' => StorefrontPackage::make($package, $availability),
-            'maxQuantity' => min(PlaceOrder::MAX_QUANTITY, $availability->purchasable),
-            'reservationMinutes' => (int) config('voucher.reservation_minutes', 15),
+            'maxQuantity' => min($settings->maxQuantity(), $availability->purchasable),
+            'reservationMinutes' => $settings->reservationMinutes(),
             'customer' => [
                 'name' => $profile?->name ?? '',
                 'email' => $profile?->email ?? '',

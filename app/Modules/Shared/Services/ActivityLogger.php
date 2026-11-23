@@ -29,6 +29,9 @@ class ActivityLogger
             'subject_id' => $subject?->getKey(),
             'properties' => $properties ?: null,
             'ip_address' => Context::getHidden(self::CONTEXT_IP),
+            // Diisi aplikasi (UTC), bukan default database: zona waktu server
+            // PostgreSQL bisa berbeda (mis. WIB) sehingga waktunya bergeser.
+            'created_at' => now(),
         ]);
     }
 }

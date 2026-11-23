@@ -6,6 +6,8 @@ use App\Modules\Catalog\Contracts\PackageCatalog;
 use App\Modules\Catalog\Contracts\PackageStockReader;
 use App\Modules\Catalog\Data\PackageData;
 use App\Modules\Catalog\Data\PackageStock;
+use App\Modules\Ordering\Contracts\SalesReport;
+use App\Modules\Ordering\Data\SalesPeriod;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,7 +17,7 @@ use Inertia\Response;
  */
 class DashboardController
 {
-    public function __invoke(PackageCatalog $catalog, PackageStockReader $stockReader): Response
+    public function __invoke(PackageCatalog $catalog, PackageStockReader $stockReader, SalesReport $sales): Response
     {
         $packages = $catalog->all();
         $stock = $stockReader->stockFor(array_map(fn (PackageData $p) => $p->id, $packages));
@@ -29,6 +31,7 @@ class DashboardController
         ], $packages);
 
         $sum = fn (string $key) => array_sum(array_column($rows, $key));
+        $today = now((string) config('voucher.business_timezone'))->toDateString();
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
@@ -37,6 +40,8 @@ class DashboardController
                 'reserved' => $sum('reserved_count'),
                 'sold' => $sum('sold_count'),
             ],
+            'today' => $sales->summary(SalesPeriod::days($today, $today)),
+            'attention' => $sales->attentionCounts(),
             'packages' => $rows,
         ]);
     }
