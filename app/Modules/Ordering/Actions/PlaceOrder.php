@@ -7,6 +7,7 @@ use App\Modules\Inventory\Contracts\InsufficientStockException;
 use App\Modules\Inventory\Contracts\VoucherReservations;
 use App\Modules\Ordering\Data\CustomerData;
 use App\Modules\Ordering\Enums\OrderStatus;
+use App\Modules\Ordering\Events\OrderPlaced;
 use App\Modules\Ordering\Exceptions\TooManyPendingOrdersException;
 use App\Modules\Ordering\Models\Order;
 use App\Modules\Ordering\Services\InvoiceNumberGenerator;
@@ -67,6 +68,8 @@ class PlaceOrder
 
             return $order;
         });
+
+        event(new OrderPlaced($order->invoice_number));
 
         $this->logger->log('order.placed', $order, [
             'invoice' => $order->invoice_number,

@@ -19,8 +19,17 @@ class OrderController
 {
     public function __construct(private readonly OrderAccess $access) {}
 
-    public function show(Request $request, Order $order, ExpireOrders $expireOrders, VoucherReservations $reservations): Response
+    public function show(Request $request, Order $order, ExpireOrders $expireOrders, VoucherReservations $reservations): Response|RedirectResponse
     {
+        // Link dari email: tanda tangan valid memberi akses ke browser ini,
+        // lalu diarahkan ke URL bersih agar tanda tangan tidak tersimpan di riwayat.
+        if ($request->has('signature')) {
+            abort_unless($request->hasValidSignature(), 404);
+            $this->access->grant($request, $order);
+
+            return to_route('orders.show', $order->invoice_number);
+        }
+
         $this->authorizeView($request, $order);
 
         // Beri kesempatan modul lain (Payment) memperbarui status pembayaran dulu,

@@ -6,6 +6,8 @@ use App\Modules\Inventory\Contracts\InsufficientStockException;
 use App\Modules\Inventory\Contracts\VoucherReservations;
 use App\Modules\Ordering\Enums\OrderStatus;
 use App\Modules\Ordering\Enums\PaidOrderOutcome;
+use App\Modules\Ordering\Events\OrderPaid;
+use App\Modules\Ordering\Events\OrderRefundRequired;
 use App\Modules\Ordering\Models\Order;
 use App\Modules\Ordering\Models\OrderItem;
 use App\Modules\Shared\Services\ActivityLogger;
@@ -42,7 +44,8 @@ class MarkOrderPaid
             }
 
             if ($order->status === OrderStatus::RefundRequired) {
-                return [PaidOrderOutcome::RefundRequired, $order];
+                // Sudah diproses sebelumnya: jangan catat/kirim event lagi.
+                return [PaidOrderOutcome::RefundRequired, null];
             }
 
             $wasPending = $order->status === OrderStatus::Pending;
@@ -103,6 +106,12 @@ class MarkOrderPaid
 
         if ($outcome === PaidOrderOutcome::RefundRequired) {
             Log::warning('Pembayaran diterima tetapi stok habis; pesanan perlu refund.', ['invoice' => $order->invoice_number]);
+            event(new OrderRefundRequired($order->invoice_number));
+
+            return;
         }
+
+        // Dikirim di luar transaksi dan hanya sekali (AlreadyPaid sudah disaring di atas).
+        event(new OrderPaid($order->invoice_number));
     }
 }

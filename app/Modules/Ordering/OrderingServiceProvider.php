@@ -5,12 +5,16 @@ namespace App\Modules\Ordering;
 use App\Modules\Catalog\Contracts\PackageUsageCheck;
 use App\Modules\Ordering\Console\ExpireOrdersCommand;
 use App\Modules\Ordering\Contracts\OrderPayments;
+use App\Modules\Identity\Events\EmailOwnershipConfirmed;
+use App\Modules\Ordering\Listeners\ClaimGuestOrders;
+use App\Modules\Ordering\Listeners\SendOrderEmails;
 use App\Modules\Ordering\Services\OrderPaymentsService;
 use App\Modules\Ordering\Services\PackageHasOrders;
 use App\Modules\Shared\ModuleServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**
@@ -38,9 +42,17 @@ class OrderingServiceProvider extends ModuleServiceProvider
             ->by($request->ip())
             ->response(fn () => back()->with('error', 'Terlalu banyak percobaan checkout. Coba lagi dalam satu menit.')));
 
+        // Mencegah menebak-nebak nomor invoice di "Cek Pesanan".
+        RateLimiter::for('order-lookup', fn (Request $request) => Limit::perMinute(5)
+            ->by($request->ip())
+            ->response(fn () => back()->withErrors(['invoice_number' => 'Terlalu banyak percobaan. Coba lagi dalam satu menit.'])));
+
         if ($this->app->runningInConsole()) {
             $this->commands([ExpireOrdersCommand::class]);
         }
+
+        Event::subscribe(SendOrderEmails::class);
+        Event::listen(EmailOwnershipConfirmed::class, ClaimGuestOrders::class);
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule) {
             $schedule->command('orders:expire')->everyMinute()->withoutOverlapping();

@@ -5,6 +5,7 @@ namespace App\Modules\Identity\Models;
 use App\Modules\Identity\Database\Factories\UserFactory;
 use App\Modules\Identity\Enums\Permission;
 use App\Modules\Identity\Enums\Role;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -16,7 +17,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable(['name', 'email', 'phone', 'password', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;

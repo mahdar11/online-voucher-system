@@ -7,6 +7,10 @@ use App\Modules\Identity\Actions\Fortify\ResetUserPassword;
 use App\Modules\Identity\Contracts\UserDirectory;
 use App\Modules\Identity\Enums\Role;
 use App\Modules\Identity\Http\Responses\LoginResponse;
+use App\Modules\Identity\Listeners\ConfirmEmailOwnership;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Event;
 use App\Modules\Identity\Models\User;
 use App\Modules\Identity\Services\EloquentUserDirectory;
 use App\Modules\Shared\ModuleServiceProvider;
@@ -39,6 +43,29 @@ class IdentityServiceProvider extends ModuleServiceProvider
     {
         $this->registerAdminRouteMacro();
         $this->configureFortify();
+        $this->configureEmailVerification();
+
+        Event::subscribe(ConfirmEmailOwnership::class);
+    }
+
+    /**
+     * Email verifikasi dalam bahasa Indonesia. Login dan checkout tidak mewajibkan
+     * verifikasi; verifikasi dipakai untuk membuktikan kepemilikan email.
+     */
+    private function configureEmailVerification(): void
+    {
+        VerifyEmail::toMailUsing(fn (object $notifiable, string $url) => (new MailMessage)
+            ->subject('Verifikasi email akun '.config('app.name'))
+            ->greeting('Halo '.($notifiable->name ?? '').',')
+            ->line('Klik tombol di bawah untuk memverifikasi alamat email Anda.')
+            ->action('Verifikasi Email', $url)
+            ->line('Setelah terverifikasi, pesanan yang pernah Anda buat tanpa login dengan email ini akan muncul di akun Anda.')
+            ->line('Jika Anda tidak membuat akun, abaikan email ini.')
+            ->salutation('Salam, '.config('app.name')));
+
+        Fortify::verifyEmailView(fn (Request $request) => Inertia::render('Identity/Auth/VerifyEmail', [
+            'status' => $request->session()->get('status'),
+        ]));
     }
 
     /**

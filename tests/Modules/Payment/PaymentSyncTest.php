@@ -28,10 +28,10 @@ class PaymentSyncTest extends PaymentTestCase
 
         $this->get("/pesanan/{$order->invoice_number}?bayar=selesai")
             ->assertInertia(fn (Assert $page) => $page
-                ->where('order.status', 'paid')
+                ->where('order.status', 'completed')
                 ->has('order.vouchers', 2));
 
-        $this->assertSame(OrderStatus::Paid, $order->refresh()->status);
+        $this->assertSame(OrderStatus::Completed, $order->refresh()->status);
     }
 
     public function test_status_checks_are_throttled(): void

@@ -47,7 +47,7 @@ class XenditWebhookTest extends PaymentTestCase
             ->assertJson(['received' => true, 'result' => 'paid']);
 
         $order->refresh();
-        $this->assertSame(OrderStatus::Paid, $order->status);
+        $this->assertSame(OrderStatus::Completed, $order->status); // lunas lalu email voucher terkirim
         $this->assertNotNull($order->paid_at);
         $this->assertSame(2, $this->soldCount($order));
 
@@ -57,8 +57,8 @@ class XenditWebhookTest extends PaymentTestCase
 
         $this->get("/pesanan/{$order->invoice_number}")
             ->assertInertia(fn (Assert $page) => $page
-                ->where('order.status', 'paid')
-                ->where('order.status_label', 'Lunas')
+                ->where('order.status', 'completed')
+                ->where('order.status_label', 'Selesai')
                 ->has('order.vouchers', 2)
                 ->where('order.vouchers.0.code', fn ($code) => str_starts_with($code, 'TEST'))
                 ->where('order.can_pay', false));
@@ -113,7 +113,7 @@ class XenditWebhookTest extends PaymentTestCase
 
         $this->webhook("{$order->invoice_number}-1", 'PAID', 10000)->assertJson(['result' => 'paid']);
 
-        $this->assertSame(OrderStatus::Paid, $order->refresh()->status);
+        $this->assertSame(OrderStatus::Completed, $order->refresh()->status);
         $this->assertSame(2, $this->soldCount($order));
     }
 
