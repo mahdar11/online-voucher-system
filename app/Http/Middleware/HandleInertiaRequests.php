@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Identity\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,13 +40,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'appName' => config('app.name'),
             'auth' => [
-                'user' => fn () => $request->user() ? [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'roles' => $request->user()->getRoleNames(),
-                    'permissions' => $request->user()->getAllPermissions()->pluck('name'),
-                ] : null,
+                'user' => fn () => $this->presentUser($request->user()),
             ],
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),
@@ -53,6 +48,28 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
                 'details' => fn () => $request->session()->get('details', []),
             ],
+        ];
+    }
+
+    /**
+     * Frontend menerima keputusan (isStaff, can.*) dari backend, sehingga nama
+     * role/permission tidak perlu ditulis ulang di Svelte.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function presentUser(?User $user): ?array
+    {
+        if (! $user) {
+            return null;
+        }
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roleLabel' => $user->primaryRole()?->label(),
+            'isStaff' => $user->isStaff(),
+            'can' => $user->permissionMap(),
         ];
     }
 }

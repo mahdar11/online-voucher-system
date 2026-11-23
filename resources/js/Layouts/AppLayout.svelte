@@ -4,7 +4,7 @@
     let { children } = $props();
 
     const user = $derived(page.props.auth?.user);
-    const isStaff = $derived(user?.roles?.some((role) => ['super_admin', 'admin'].includes(role)) ?? false);
+    const isStaff = $derived(user?.isStaff ?? false);
 </script>
 
 <div class="min-h-screen">

@@ -1,14 +1,14 @@
 <script>
     import { Link, page } from '@inertiajs/svelte';
-    import AdminLayout from '../../Layouts/AdminLayout.svelte';
-    import StatusBadge from '../../Components/StatusBadge.svelte';
-    import { formatNumber, formatRupiah } from '../../lib/format.js';
+    import AdminLayout from '@/Layouts/AdminLayout.svelte';
+    import StatusBadge from '@/Components/StatusBadge.svelte';
+    import { formatNumber, formatRupiah } from '@/lib/format.js';
 
     let { stats, packages } = $props();
 
     const user = $derived(page.props.auth.user);
-    const roleLabel = $derived(user.roles.includes('super_admin') ? 'Super Admin' : 'Admin');
-    const canManageVouchers = $derived(user.permissions.includes('manage vouchers'));
+    const roleLabel = $derived(user.roleLabel);
+    const canManageVouchers = $derived(user.can.manageVouchers);
 
     const cards = $derived([
         { label: 'Paket Aktif', value: stats.active_packages },

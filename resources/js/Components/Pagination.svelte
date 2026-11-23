@@ -1,6 +1,6 @@
 <script>
     import { Link } from '@inertiajs/svelte';
-    import { formatNumber } from '../lib/format.js';
+    import { formatNumber } from '@/lib/format.js';
 
     /** Menerima objek paginator Laravel (LengthAwarePaginator). */
     let { paginator } = $props();

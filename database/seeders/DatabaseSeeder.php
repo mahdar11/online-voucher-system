@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Modules\Identity\Database\Seeders\DemoUserSeeder;
+use App\Modules\Identity\Database\Seeders\RoleSeeder;
+use App\Modules\Identity\Database\Seeders\SuperAdminSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

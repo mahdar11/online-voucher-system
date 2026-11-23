@@ -1,21 +1,21 @@
 <script>
     import { Link, page } from '@inertiajs/svelte';
-    import Alert from '../Components/Alert.svelte';
+    import Alert from '@/Components/Alert.svelte';
 
     let { title, actions, children } = $props();
 
     let menuOpen = $state(false);
 
     const user = $derived(page.props.auth.user);
-    const can = (permission) => user?.permissions?.includes(permission) ?? false;
 
+    // "permission" adalah key dari auth.user.can yang dikirim backend.
     const menu = $derived(
         [
             { href: '/admin', label: 'Dashboard', exact: true },
-            { href: '/admin/paket', label: 'Paket Voucher', permission: 'manage packages' },
-            { href: '/admin/voucher', label: 'Stok Voucher', permission: 'manage vouchers' },
-            { href: '/admin/batch', label: 'Riwayat Batch', permission: 'manage vouchers' },
-        ].filter((item) => !item.permission || can(item.permission)),
+            { href: '/admin/paket', label: 'Paket Voucher', permission: 'managePackages' },
+            { href: '/admin/voucher', label: 'Stok Voucher', permission: 'manageVouchers' },
+            { href: '/admin/batch', label: 'Riwayat Batch', permission: 'manageVouchers' },
+        ].filter((item) => !item.permission || user?.can?.[item.permission]),
     );
 
     const currentPath = $derived(page.url.split('?')[0]);

@@ -2,38 +2,42 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\VoucherPackage;
+use App\Modules\Catalog\Contracts\PackageCatalog;
+use App\Modules\Catalog\Contracts\PackageStockReader;
+use App\Modules\Catalog\Data\PackageData;
+use App\Modules\Catalog\Data\PackageStock;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class DashboardController extends Controller
+/**
+ * Dashboard admin menggabungkan data dari beberapa modul, jadi tinggal di
+ * lapisan aplikasi (shell) dan hanya memakai kontrak publik modul.
+ */
+class DashboardController
 {
-    public function __invoke(): Response
+    public function __invoke(PackageCatalog $catalog, PackageStockReader $stockReader): Response
     {
-        $packages = VoucherPackage::query()
-            ->withStockCounts()
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get()
-            ->map(fn (VoucherPackage $package) => [
-                'id' => $package->id,
-                'name' => $package->name,
-                'price' => $package->price,
-                'is_active' => $package->is_active,
-                'available_count' => $package->available_count,
-                'reserved_count' => $package->reserved_count,
-                'sold_count' => $package->sold_count,
-            ]);
+        $packages = $catalog->all();
+        $stock = $stockReader->stockFor(array_map(fn (PackageData $p) => $p->id, $packages));
+
+        $rows = array_map(fn (PackageData $package) => [
+            'id' => $package->id,
+            'name' => $package->name,
+            'price' => $package->price,
+            'is_active' => $package->isActive,
+            ...($stock[$package->id] ?? new PackageStock)->toArray(),
+        ], $packages);
+
+        $sum = fn (string $key) => array_sum(array_column($rows, $key));
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
-                'active_packages' => $packages->where('is_active', true)->count(),
-                'available' => $packages->sum('available_count'),
-                'reserved' => $packages->sum('reserved_count'),
-                'sold' => $packages->sum('sold_count'),
+                'active_packages' => count(array_filter($packages, fn (PackageData $p) => $p->isActive)),
+                'available' => $sum('available_count'),
+                'reserved' => $sum('reserved_count'),
+                'sold' => $sum('sold_count'),
             ],
-            'packages' => $packages,
+            'packages' => $rows,
         ]);
     }
 }
